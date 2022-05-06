@@ -23,7 +23,6 @@ function App() {
   params.append('_limit', 10)
   params.append('_sort', sortBy)
   params.append('_order', sortOrder ? 'asc' : 'desc')
-  console.log(loadPageCount)
 
   useEffect(() => {
     fetch(url + '?' + params.toString())
@@ -55,6 +54,7 @@ function App() {
   let changeSort = (column) => {
     setSortBy(column) 
     setSortOrder(prev => !prev)
+    sortBy !== column && setSortOrder(true)
   }
 
   return (
@@ -71,17 +71,29 @@ function App() {
               <tr className="header__items">
                 <th onClick={() => changeSort('id')}>
                   <div> 
-                    <span>ID</span><img src={arrowIcon} alt="" className={sortOrder && sortBy === 'id'  ? '':'active'}/>
+                    <span>ID</span>
+                    <img src={arrowIcon} alt="" 
+                    className={sortOrder  ? '' : 'active'} 
+                    style={{display:sortBy === 'id' ? 'block':'none'}}
+                    />
                   </div>
                 </th>
                 <th onClick={() => changeSort('title')}>
                   <div>
-                    <span>Заголовок</span><img src={arrowIcon} alt="" className={sortOrder && sortBy === 'title'  ? '':'active'}/>
+                    <span>Заголовок</span>
+                    <img src={arrowIcon} alt="" 
+                    className={sortOrder ? '' : 'active'}
+                    style={{display:sortBy === 'title' ? 'block':'none'}}
+                    />
                   </div>
                 </th>
                 <th onClick={() => changeSort('body')}>
                   <div>
-                    <span>Описание</span><img src={arrowIcon} alt="" className={sortOrder && sortBy === 'body'  ? '':'active'}/>
+                    <span>Описание</span>
+                    <img src={arrowIcon} alt="" 
+                    className={sortOrder ? '' : 'active'}
+                    style={{display:sortBy === 'body' ? 'block':'none'}}
+                    />
                   </div>
                 </th>
               </tr>
