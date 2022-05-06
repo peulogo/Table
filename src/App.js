@@ -18,14 +18,14 @@ function App() {
   const url = 'https://jsonplaceholder.typicode.com/posts'
   let params = new URLSearchParams()
   params.append('_page', currentPage)
-  params.append('q', search)
   params.append('_limit', 10)
   params.append('_sort', sortBy)
   params.append('_order', sortOrder ? 'asc' : 'desc')
+  params.append('q', search)
 
   let state = { 'page_id': currentPage}
   let title = ''
-  let page = `?page=${currentPage}`
+  let page = `?${params}`
 
   useEffect(() => {
     fetch(url + '?' + params.toString())
