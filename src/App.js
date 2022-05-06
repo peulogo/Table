@@ -1,6 +1,5 @@
 import PageItem from "./components/PageItem";
 import TableItem from "./components/TableItem";
-import './reset-style.css'
 import searchIcon from './assets/icons/search.svg'
 import arrowIcon from './assets/icons/arrow.svg'
 import debounce from 'lodash/debounce';
@@ -24,6 +23,10 @@ function App() {
   params.append('_sort', sortBy)
   params.append('_order', sortOrder ? 'asc' : 'desc')
 
+  let state = { 'page_id': currentPage}
+  let title = ''
+  let page = `?page=${currentPage}`
+
   useEffect(() => {
     fetch(url + '?' + params.toString())
     .then(res => {
@@ -32,6 +35,8 @@ function App() {
     })
     .then(data => setItems(data) )
     .then(setLoaded(true))
+
+    window.history.pushState(state, title, page)
   }, [currentPage,sortBy,search,sortOrder])
   
   let setPrevPage = () =>{
