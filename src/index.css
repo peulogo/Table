@@ -12,11 +12,18 @@ body {
   color: #474955;
 }
 
+.search__input::-webkit-search-cancel-button{
+  display: none;
+}
+
 #root {
   width: 100%;
   height: 100%;
 }
-
+form{
+  display: flex;
+  width: 100%;
+}
 .App{
   margin: 0 auto;
   max-width: 1232px;
@@ -78,9 +85,23 @@ tbody{
   line-height: 137.69%;
   color: #474955;
 }
-.header__items th{
+.header__items th div{
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 19px 0px;
 }
+.header__items th span{
+  display: inline-block;
+  margin-right: 20px;
+}
+.header__items th div img{
+  transition: all .3s linear;
+}
+img.active{
+  transform: rotate(180deg);
+}
+
 .header__items th:not(:first-child){
   width: 45%;
 }

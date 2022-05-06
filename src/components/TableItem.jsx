@@ -1,6 +1,6 @@
 import React from 'react'
 
-function Table({id, title, body}) {
+function TableItem({id, title, body}) {
   return (
     <tr className='table__item'>
         <td className='id__name'>{id}</td>
@@ -10,4 +10,4 @@ function Table({id, title, body}) {
   )
 }
 
-export default Table
+export default TableItem

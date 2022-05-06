@@ -1,63 +1,68 @@
-import Pages from "./components/Pages";
-import Table from "./components/Table";
+import PageItem from "./components/PageItem";
+import TableItem from "./components/TableItem";
 import './reset-style.css'
-import search from './assets/icons/search.svg'
-import arrow from './assets/icons/arrow.svg'
+import searchIcon from './assets/icons/search.svg'
+import arrowIcon from './assets/icons/arrow.svg'
+import debounce from 'lodash/debounce';
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 
 function App() {
   const [items, setItems] = useState([])
-  const [pages, setPages] = useState([])
+  const [loadPageCount, setLoadPageCount] = useState()
+  const pageDisplayCount = 10
   const [currentPage, setCurrentPage] = useState(1)
   const [loaded, setLoaded] = useState(false)
-  const [sortBy, setSortBy] = useState({sort:'id',order:true})
-  const [searching, setSearching] = useState('')
-  const loadPageCount = 10
+  const [sortBy, setSortBy] = useState('id')
+  const [sortOrder, setSortOrder] = useState(true)
+  const [search, setSearch] = useState('')
+
   const url = 'https://jsonplaceholder.typicode.com/posts'
   let params = new URLSearchParams()
   params.append('_page', currentPage)
-  params.append('_sort', sortBy.sort)
-  params.append('_order', sortBy.order ? 'asc' : 'desc')
-  console.log(params.toString())
+  params.append('q', search)
+  params.append('_limit', 10)
+  params.append('_sort', sortBy)
+  params.append('_order', sortOrder ? 'asc' : 'desc')
+  console.log(loadPageCount)
 
   useEffect(() => {
     fetch(url + '?' + params.toString())
-    .then(res => res.json())
-    .then(data => setItems(data))
-    .then(() => {
-      for (let i = 1; i <= loadPageCount; i++){
-        setPages(prev => [...prev, i])
-      }
+    .then(res => {
+      loadPageCount || setLoadPageCount(Number(res.headers.get('x-total-count'))/pageDisplayCount)
+      return res.json()
     })
+    .then(data => setItems(data) )
     .then(setLoaded(true))
-  }, [])
-
-  useEffect(() => {
-    // fetch(url + '?' + `_page=${currentPage}` + '&' + `_sort=${sortBy.sort}` + '&' + `_order=${sortBy.order ? 'asc' : 'desc'}` + '&' + `q=${searching}`)
-    fetch(url + '?' + params.toString())
-    .then(res => res.json())
-    .then(data => setItems(data))
-  }, [currentPage,sortBy,searching])
+  }, [currentPage,sortBy,search,sortOrder])
   
-  let getPrevPage = () =>{
+  let setPrevPage = () =>{
     setCurrentPage(prev => prev-1)
   }
-  let getNextPage = () =>{
+  let setNextPage = () =>{
     setCurrentPage(prev => prev+1)
   }
 
+  let handleSubmit = (e) =>{
+    e.preventDefault()
+    let input = e.target
+    setSearch(input.value)
 
-  let changeSort = (atn) => {
-    switch (atn) {
+  }
+
+  const debouncedOnChange = debounce(handleSubmit, 1000)
+
+
+  let changeSort = (column) => {
+    setSortOrder(prev => !prev)
+    switch (column) {
       case 'id':
-        return(setSortBy({sort:'id', order:!sortBy.order}))
+        return setSortBy('id') 
     
       case 'title':
-        return(setSortBy({sort:'title', order:!sortBy.order}))
+        return setSortBy('title') 
 
       case 'body':
-        return(setSortBy({sort:'body', order:!sortBy.order}))
+        return setSortBy('body') 
     
       default:
         return null;
@@ -67,28 +72,42 @@ function App() {
   return (
     <div className="App">
       <div className="search__panel">
-        <input type="text" name="" placeholder="Поиск" className="search__input"/>
-        <img src={search} alt="" />
+        <form onChange={debouncedOnChange}>
+        <input type="search" name="search" placeholder="Поиск" className="search__input" autoComplete="off"/>
+        <img src={searchIcon} alt=""/>
+        </form>
       </div>
       <div className="table">
         <table className="table_items"> 
           <thead className="table__header">             
               <tr className="header__items">
-                <th onClick={() => changeSort('id')}>ID<img src={arrow} alt="" /></th>
-                <th onClick={() => changeSort('title')}>Заголовок<img src={arrow} alt="" /></th>
-                <th onClick={() => changeSort('body')}>Описание<img src={arrow} alt="" /></th>
+                <th onClick={() => changeSort('id')}>
+                  <div> 
+                    <span>ID</span><img src={arrowIcon} alt="" className={sortOrder && sortBy === 'id'  ? '':'active'}/>
+                    </div>
+                </th>
+                <th onClick={() => changeSort('title')}>
+                  <div>
+                    <span>Заголовок</span><img src={arrowIcon} alt="" className={sortOrder && sortBy === 'title'  ? '':'active'}/>
+                    </div>
+                </th>
+                <th onClick={() => changeSort('body')}>
+                  <div>
+                    <span>Описание</span><img src={arrowIcon} alt="" className={sortOrder && sortBy === 'body'  ? '':'active'}/>
+                    </div>
+                </th>
               </tr>
           </thead>
           <tbody>
-            {loaded ? items.map(item => <Table key={item.id} {...item}/>) : null}
+            {loaded ? items.map(item => <TableItem key={item.id} {...item}/>) : null}
           </tbody>
         </table>
       <div className="nav">
-        <button className="prev btn-reset" disabled={currentPage === 1 ? true : false} onClick={getPrevPage}><span>Назад</span></button>
+        <button className="prev btn-reset" disabled={currentPage === 1 ? true : false} onClick={setPrevPage}><span>Назад</span></button>
         <ul className="page__list">
-          {pages.map(item => loaded ? <Pages item={item} currentPage={currentPage} setCurrentPage={setCurrentPage}/> : null)}
+          {[...Array(loadPageCount)].map((item, index) => loaded ? <PageItem key={index} index={index+1} currentPage={currentPage} setCurrentPage={setCurrentPage}/> : null)}
         </ul>
-        <button className="next btn-reset" disabled={currentPage === 10 ? true : false} onClick={getNextPage}><span>Далее</span></button>
+        <button className="next btn-reset" disabled={currentPage === 10 ? true : false} onClick={setNextPage}><span>Далее</span></button>
       </div>
       </div>
     </div>
