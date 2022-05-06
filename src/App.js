@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 function App() {
   const [items, setItems] = useState([])
   const [loadPageCount, setLoadPageCount] = useState()
-  const pageDisplayCount = 10
+  const perPage = 10
   const [currentPage, setCurrentPage] = useState(1)
   const [loaded, setLoaded] = useState(false)
   const [sortBy, setSortBy] = useState('id')
@@ -28,7 +28,7 @@ function App() {
   useEffect(() => {
     fetch(url + '?' + params.toString())
     .then(res => {
-      loadPageCount || setLoadPageCount(Number(res.headers.get('x-total-count'))/pageDisplayCount)
+      loadPageCount || setLoadPageCount(Number(res.headers.get('x-total-count'))/perPage)
       return res.json()
     })
     .then(data => setItems(data) )
@@ -38,6 +38,7 @@ function App() {
   let setPrevPage = () =>{
     setCurrentPage(prev => prev-1)
   }
+
   let setNextPage = () =>{
     setCurrentPage(prev => prev+1)
   }
@@ -49,31 +50,18 @@ function App() {
 
   }
 
-  const debouncedOnChange = debounce(handleSubmit, 1000)
-
+  const onSearch = debounce(handleSubmit, 1000)
 
   let changeSort = (column) => {
+    setSortBy(column) 
     setSortOrder(prev => !prev)
-    switch (column) {
-      case 'id':
-        return setSortBy('id') 
-    
-      case 'title':
-        return setSortBy('title') 
-
-      case 'body':
-        return setSortBy('body') 
-    
-      default:
-        return null;
-    }
   }
 
   return (
     <div className="App">
       <div className="search__panel">
-        <form onChange={debouncedOnChange}>
-        <input type="search" name="search" placeholder="Поиск" className="search__input" autoComplete="off"/>
+        <form>
+        <input type="search" name="search" placeholder="Поиск" className="search__input" autoComplete="off" onInput={onSearch}/>
         <img src={searchIcon} alt=""/>
         </form>
       </div>
@@ -84,17 +72,17 @@ function App() {
                 <th onClick={() => changeSort('id')}>
                   <div> 
                     <span>ID</span><img src={arrowIcon} alt="" className={sortOrder && sortBy === 'id'  ? '':'active'}/>
-                    </div>
+                  </div>
                 </th>
                 <th onClick={() => changeSort('title')}>
                   <div>
                     <span>Заголовок</span><img src={arrowIcon} alt="" className={sortOrder && sortBy === 'title'  ? '':'active'}/>
-                    </div>
+                  </div>
                 </th>
                 <th onClick={() => changeSort('body')}>
                   <div>
                     <span>Описание</span><img src={arrowIcon} alt="" className={sortOrder && sortBy === 'body'  ? '':'active'}/>
-                    </div>
+                  </div>
                 </th>
               </tr>
           </thead>
@@ -102,13 +90,13 @@ function App() {
             {loaded ? items.map(item => <TableItem key={item.id} {...item}/>) : null}
           </tbody>
         </table>
-      <div className="nav">
-        <button className="prev btn-reset" disabled={currentPage === 1 ? true : false} onClick={setPrevPage}><span>Назад</span></button>
-        <ul className="page__list">
-          {[...Array(loadPageCount)].map((item, index) => loaded ? <PageItem key={index} index={index+1} currentPage={currentPage} setCurrentPage={setCurrentPage}/> : null)}
-        </ul>
-        <button className="next btn-reset" disabled={currentPage === 10 ? true : false} onClick={setNextPage}><span>Далее</span></button>
-      </div>
+        <div className="nav">
+          <button className="prev btn-reset" disabled={currentPage === 1} onClick={setPrevPage}><span>Назад</span></button>
+          <ul className="page__list">
+            {[...Array(loadPageCount)].map((item, index) => loaded ? <PageItem key={index} index={index+1} currentPage={currentPage} setCurrentPage={setCurrentPage}/> : null)}
+          </ul>
+          <button className="next btn-reset" disabled={currentPage === loadPageCount} onClick={setNextPage}><span>Далее</span></button>
+        </div>
       </div>
     </div>
   );
