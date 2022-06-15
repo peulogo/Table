@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 function App() {
   const [items, setItems] = useState([])
-  const [pageCount, setPageCount] = useState()
+  const [pageCount, setPageCount] = useState(0)
   const perPage = 10
   const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -31,13 +31,15 @@ function App() {
     setLoading(true)
     fetch(url + '?' + params.toString())
       .then(res => {
-        pageCount || setPageCount(Number(res.headers.get('x-total-count')) / perPage)
+        Number(res.headers.get('x-total-count')) === perPage ? setPageCount(0) : setPageCount(Math.round(Number(res.headers.get('x-total-count')) / perPage))
+        console.log(Number(res.headers.get('x-total-count')));
         return res.json()
       })
       .then(data => setItems(data))
       .then(setLoading(false))
 
     window.history.pushState(state, title, page)
+    console.log('fetching');
   }, [currentPage, sortBy, search, sortOrder])
 
   let setPrevPage = () => {
@@ -109,7 +111,7 @@ function App() {
           </tbody>
         </table>
         {!items.length ? <div className="no-data">Нет данных</div> : (
-          <div className="nav">
+          <div className={pageCount > 1 ? 'nav' : 'nav hidden'}>
             <button className="prev btn-reset" disabled={currentPage === 1} onClick={setPrevPage}><span>Назад</span></button>
             <ul className="page__list">
               {[...Array(pageCount)].map((item, index) => !loading ? <PageItem key={index} index={index + 1} currentPage={currentPage} setCurrentPage={setCurrentPage} /> : null)}

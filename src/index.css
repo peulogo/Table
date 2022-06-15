@@ -139,6 +139,9 @@ tbody tr > td:not(:first-child){
   padding: 0px 25px;
 }
 
+.nav.hidden{
+  visibility: hidden;
+}
 
 .page__list{
   display: flex;
