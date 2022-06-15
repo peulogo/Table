@@ -32,14 +32,15 @@ function App() {
     fetch(url + '?' + params.toString())
       .then(res => {
         Number(res.headers.get('x-total-count')) === perPage ? setPageCount(0) : setPageCount(Math.round(Number(res.headers.get('x-total-count')) / perPage))
-        console.log(Number(res.headers.get('x-total-count')));
+        if(currentPage > Number(res.headers.get('x-total-count'))){
+          setCurrentPage(1)
+        }
         return res.json()
       })
       .then(data => setItems(data))
       .then(setLoading(false))
 
     window.history.pushState(state, title, page)
-    console.log('fetching');
   }, [currentPage, sortBy, search, sortOrder])
 
   let setPrevPage = () => {
@@ -54,7 +55,6 @@ function App() {
     e.preventDefault()
     let input = e.target
     setSearch(input.value)
-
   }
 
   const onSearch = debounce(handleSubmit, 500)
