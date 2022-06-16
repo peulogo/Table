@@ -8,7 +8,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { currentPageDecrement, currentPageIncrement, itemGet } from "./store/actions";
 
 function App() {
-
   const dispatch = useDispatch()
   let items = useSelector(store => store.items.items)
   let loading = useSelector(store => store.loading.loading)
